@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Min Værstasjon</title>
+    <style>
+        /* Fjerner standard marger og setter høyden til 100% av skjermen */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Forhindrer unødvendige rullefelt */
+            background-color: #f4f4f4; /* Nøytral bakgrunnsfarge mens kartet laster */
+        }
+        
+        /* Gjør at iframen dekker hele skjermen */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none; /* Fjerner rammen rundt iframen */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Bytter inn Netatmo-kartet med URLen din -->
+    <iframe 
+        src="https://weathermap.netatmo.com/?stationid=70:ee:50:7f:f9:98&zoom=14.748587811931849" 
+        title="Netatmo Værkart"
+        allowfullscreen>
+    </iframe>
+
+</body>
+</html>
