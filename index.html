@@ -228,12 +228,12 @@
     </div>
 
     <div class="dashboard-grid">
-      <!-- Venstre: Netatmo Værkart -->
+      <!-- Venstre: Netatmo Værkart med fokus på stasjonen -->
       <section class="card">
         <h2>Været i nabolaget (Netatmo)</h2>
         <div class="map-container">
           <iframe 
-            src="https://weathermap.netatmo.com" 
+            src="https://weathermap.netatmo.com/?stationid=70:ee:50:7f:f9:98&zoom=14.9" 
             title="Netatmo Værkart">
           </iframe>
         </div>
@@ -408,7 +408,7 @@
         const filteredCalls = calls.filter(call => {
           const code = call.serviceJourney?.journeyPattern?.line?.publicCode;
           return code && stop.acceptedLines.includes(code.trim());
-        }).slice(0, 5); // Viser inntil 5 avganger for god oversikt over 51 og 54
+        }).slice(0, 5);
 
         if (!filteredCalls || filteredCalls.length === 0) {
           container.innerHTML = `<span class="loading-text">Ingen nærliggende avganger funnet.</span>`;
