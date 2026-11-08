@@ -1,61 +1,341 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Min Værstasjon</title>
-    <style>
-        /* Fjerner standard marger og setter høyden til 100% av skjermen */
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            background-color: #f4f4f4;
-        }
-        
-        /* Gjør at iframen dekker hele skjermen */
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Svensenga & Korsvoll Nabolag</title>
 
-        /* Plasserer telleren flytende over kartet nede i venstre hjørne */
-        .besoksteller {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background-color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            font-family: sans-serif;
-            font-size: 14px;
-            color: #333;
-            z-index: 1000; /* Sørger for at den alltid ligger øverst */
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-    </style>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --border: #e2e8f0;
+      --ruter-red: #e60000;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 1.5rem;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1050px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1.75rem;
+    }
+
+    .ad-slot {
+      background: #f1f5f9;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      margin: 1.5rem 0;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 850px) {
+      .dashboard-grid {
+        grid-template-columns: 3fr 2fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.15rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .map-container {
+      width: 100%;
+      height: 480px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .map-container iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* Ruter sanntid styling */
+    .stop-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .stop-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .stop-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .departure-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .departure-row:last-child {
+      border-bottom: none;
+    }
+
+    .line-badge {
+      background-color: var(--ruter-red);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 8px;
+    }
+
+    .destination {
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 160px;
+    }
+
+    .time-badge {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .time-badge.realtime {
+      color: #16a34a; /* Grønn hvis det er sanntid */
+    }
+
+    .loading-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Bytter inn Netatmo-kartet -->
-    <iframe 
-        src="https://weathermap.netatmo.com/?stationid=70:ee:50:7f:f9:98&zoom=14.748587811931849" 
-        title="Netatmo Værkart"
-        allowfullscreen>
-    </iframe>
+  <div class="container">
+    <header>
+      <h1>Svensenga & Korsvoll Nabolag</h1>
+      <p style="margin: 0; color: var(--text-muted);">Værstasjon og lokal sanntidsinformasjon</p>
+    </header>
 
-    <!-- Teller-boks -->
-    <div class="besoksteller">
-        Antall besøk: 
-        <!-- Bildet som fungerer som teller. Den bruker domenenavnet ditt som ID -->
-        <img src="https://api.visitorbadge.io/api/visitors?path=svensenga.no&countColor=%23000000" alt="Besøksteller">
+    <!-- Toppannonse -->
+    <div class="ad-slot">
+      <span>Annonseplass (Google AdSense / Banner)</span>
     </div>
+
+    <div class="dashboard-grid">
+      <!-- Venstre: Netatmo Værkart -->
+      <section class="card">
+        <h2>Været i nabolaget (Netatmo)</h2>
+        <div class="map-container">
+          <!-- Sett inn din eksisterende iframe-lenke her -->
+          <iframe 
+            src="https://weathermap.netatmo.com" 
+            title="Netatmo Værkart">
+          </iframe>
+        </div>
+      </section>
+
+      <!-- Høyre: Sanntid Kollektiv + Nyttige lenker -->
+      <aside style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <div class="card">
+          <h2>
+            Buss i nærheten
+            <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">Oppdateres live</span>
+          </h2>
+
+          <div class="stop-group">
+            <div class="stop-title">Svensenga</div>
+            <div id="departures-svensenga" class="loading-text">Henter avganger...</div>
+          </div>
+
+          <div class="stop-group">
+            <div class="stop-title">Korsvoll</div>
+            <div id="departures-korsvoll" class="loading-text">Henter avganger...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Lokale hurtiglenker</h2>
+          <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">
+            <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+              <span>Tømmekalender</span>
+              <a href="https://www.oslo.kommune.no/avfall-og-gjenvinning/avfallshenting/" target="_blank" rel="noopener">Oslo Kommune</a>
+            </li>
+            <li style="padding: 0.4rem 0; display: flex; justify-content: space-between;">
+              <span>Føremelding Marka</span>
+              <a href="https://www.skiforeningen.no/marka/foremelding/" target="_blank" rel="noopener">Skiforeningen</a>
+            </li>
+          </ul>
+        </div>
+
+      </aside>
+    </div>
+
+    <!-- Bunnannonse -->
+    <div class="ad-slot">
+      <span>Annonseplass</span>
+    </div>
+
+    <footer>
+      <p>&copy; svensenga.no | Data levert av Entur / Ruter & Netatmo</p>
+    </footer>
+  </div>
+
+  <script>
+    // Konfigurasjon for stoppestedene via Entur JourneyPlanner v3
+    const STOPS = [
+      { id: "NSR:StopPlace:5943", elementId: "departures-svensenga" },
+      { id: "NSR:StopPlace:5945", elementId: "departures-korsvoll" }
+    ];
+
+    async function fetchDepartures(stopId) {
+      const query = `
+        query {
+          stopPlace(id: "${stopId}") {
+            name
+            estimatedCalls(numberOfDepartures: 4) {
+              expectedDepartureTime
+              realtime
+              destinationDisplay {
+                frontText
+              }
+              serviceJourney {
+                journeyPattern {
+                  line {
+                    publicCode
+                  }
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      try {
+        const response = await fetch("https://api.entur.io/journey-planner/v3/graphql", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "ET-Client-Name": "svensenga_no-neighborhood_dashboard"
+          },
+          body: JSON.stringify({ query })
+        });
+
+        const data = await response.json();
+        return data?.data?.stopPlace?.estimatedCalls || [];
+      } catch (err) {
+        console.error(`Feil ved henting av stopp ${stopId}:`, err);
+        return [];
+      }
+    }
+
+    function formatTime(isoString) {
+      const departure = new Date(isoString);
+      const now = new Date();
+      const diffMin = Math.round((departure - now) / 60000);
+
+      if (diffMin <= 0) return "Nå";
+      if (diffMin < 15) return `${diffMin} min`;
+
+      // Viser klokkeslett (HH:MM) hvis det er over 15 minutter til
+      return departure.toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    async function updateAllStops() {
+      for (const stop of STOPS) {
+        const container = document.getElementById(stop.elementId);
+        const calls = await fetchDepartures(stop.id);
+
+        if (!calls || calls.length === 0) {
+          container.innerHTML = '<span class="loading-text">Ingen nærliggende avganger funnet.</span>';
+          continue;
+        }
+
+        container.innerHTML = calls.map(call => {
+          const line = call.serviceJourney.journeyPattern.line.publicCode || "Buss";
+          const dest = call.destinationDisplay.frontText;
+          const timeText = formatTime(call.expectedDepartureTime);
+          const isRealtime = call.realtime ? "realtime" : "";
+
+          return `
+            <div class="departure-row">
+              <div style="display: flex; align-items: center; overflow: hidden;">
+                <span class="line-badge">${line}</span>
+                <span class="destination" title="${dest}">${dest}</span>
+              </div>
+              <span class="time-badge ${isRealtime}">${timeText}</span>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+
+    // Første innlasting
+    updateAllStops();
+
+    // Automatisk oppdatering hvert 30. sekund
+    setInterval(updateAllStops, 30000);
+  </script>
 
 </body>
 </html>
