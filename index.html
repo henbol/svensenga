@@ -309,20 +309,42 @@
 // --- 1. ENTUR / RUTER OPPSETT ---
     const STOPS = [
       { 
-        // Svensenga i Maridalsveien (betjenes av linje 25)
-        id: "NSR:StopPlace:6117", 
+        name: "Svensenga",
         elementId: "departures-svensenga",
         acceptedLines: ["25", "11N", "12N"] 
       },
       { 
-        // Korsvoll skole (betjenes av linje 54)
-        id: "NSR:StopPlace:6120", 
+        name: "Korsvoll", // Maridalsveien 350 / Korsvollbakken
         elementId: "departures-korsvoll",
         acceptedLines: ["54", "11N", "12N"] 
       }
     ];
 
+    // Henter stoppesteds-ID dynamisk via Enturs geocoder for å sikre 100 % treff i Oslo
+    async function getStopPlaceId(stopName) {
+      try {
+        const res = await fetch(
+          `https://api.entur.io/geocoder/v1/autocomplete?text=${encodeURIComponent(stopName)}&boundary.county_ids=03&layers=venue`,
+          {
+            headers: { "ET-Client-Name": "svensenga_no-neighborhood_dashboard" }
+          }
+        );
+        const data = await res.json();
+        // Finn første stoppested som heter nøyaktig eller starter med navnet i Oslo
+        const match = data.features?.find(f => 
+          f.properties.name.toLowerCase() === stopName.toLowerCase() ||
+          f.properties.label.toLowerCase().includes(stopName.toLowerCase())
+        );
+        return match?.properties?.id; // Returnerer f.eks. "NSR:StopPlace:XXXX"
+      } catch (err) {
+        console.error("Feil ved geocoding av " + stopName, err);
+        return null;
+      }
+    }
+
     async function fetchDepartures(stopId) {
+      if (!stopId) return [];
+
       const query = `
         query {
           stopPlace(id: "${stopId}") {
@@ -358,7 +380,7 @@
         const data = await response.json();
         return data?.data?.stopPlace?.estimatedCalls || [];
       } catch (err) {
-        console.error(`Feil ved henting av stopp ${stopId}:`, err);
+        console.error(`Feil ved henting av avganger for ${stopId}:`, err);
         return [];
       }
     }
@@ -373,19 +395,33 @@
       return departure.toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" });
     }
 
+    // Cache for ID-ene så vi slipper å gjøre geocoding-kall hvert 30. sekund
+    const stopIdCache = {};
+
     async function updateAllStops() {
       for (const stop of STOPS) {
         const container = document.getElementById(stop.elementId);
-        const calls = await fetchDepartures(stop.id);
 
-        // Filtrer strengt på kun de linjene som faktisk skal gå herfra
+        if (!stopIdCache[stop.name]) {
+          stopIdCache[stop.name] = await getStopPlaceId(stop.name);
+        }
+
+        const stopId = stopIdCache[stop.name];
+        if (!stopId) {
+          container.innerHTML = `<span class="loading-text">Fant ikke holdeplass ${stop.name}.</span>`;
+          continue;
+        }
+
+        const calls = await fetchDepartures(stopId);
+
+        // Filtrer kun linjene som skal stoppe her
         const filteredCalls = calls.filter(call => {
           const code = call.serviceJourney?.journeyPattern?.line?.publicCode;
           return code && stop.acceptedLines.includes(code.trim());
         }).slice(0, 4);
 
         if (!filteredCalls || filteredCalls.length === 0) {
-          container.innerHTML = '<span class="loading-text">Ingen avganger funnet for linje ' + stop.acceptedLines[0] + '.</span>';
+          container.innerHTML = `<span class="loading-text">Ingen nærliggende avganger for linje ${stop.acceptedLines[0]}.</span>`;
           continue;
         }
 
