@@ -309,24 +309,25 @@
 // --- 1. ENTUR / RUTER OPPSETT ---
     const STOPS = [
       { 
-        id: "NSR:StopPlace:5943", // Svensenga
+        // Svensenga i Maridalsveien (betjenes av linje 25)
+        id: "NSR:StopPlace:6117", 
         elementId: "departures-svensenga",
         acceptedLines: ["25", "11N", "12N"] 
       },
       { 
-        id: "NSR:StopPlace:5945", // Korsvoll skole
+        // Korsvoll skole (betjenes av linje 54)
+        id: "NSR:StopPlace:6120", 
         elementId: "departures-korsvoll",
         acceptedLines: ["54", "11N", "12N"] 
       }
     ];
 
     async function fetchDepartures(stopId) {
-      // Henter flere avganger (25 stk) så vi er sikre på å fange opp linjene selv om det er intervall mellom dem
       const query = `
         query {
           stopPlace(id: "${stopId}") {
             name
-            estimatedCalls(numberOfDepartures: 25) {
+            estimatedCalls(numberOfDepartures: 15) {
               expectedDepartureTime
               realtime
               destinationDisplay {
@@ -377,41 +378,20 @@
         const container = document.getElementById(stop.elementId);
         const calls = await fetchDepartures(stop.id);
 
-        // Robust sjekk på linjenummer
+        // Filtrer strengt på kun de linjene som faktisk skal gå herfra
         const filteredCalls = calls.filter(call => {
           const code = call.serviceJourney?.journeyPattern?.line?.publicCode;
-          if (!code) return false;
-          return stop.acceptedLines.some(l => code.trim() === l);
+          return code && stop.acceptedLines.includes(code.trim());
         }).slice(0, 4);
 
         if (!filteredCalls || filteredCalls.length === 0) {
-          // Fallback: hvis linjefilteret ikke matcher koden fra Entur, vis de reelle avgangene som kom inn for feilsøking
-          if (calls.length > 0) {
-            container.innerHTML = calls.slice(0, 4).map(call => {
-              const line = call.serviceJourney?.journeyPattern?.line?.publicCode || "Buss";
-              const dest = call.destinationDisplay?.frontText || "";
-              const timeText = formatTime(call.expectedDepartureTime);
-              const isRealtime = call.realtime ? "realtime" : "";
-              return `
-                <div class="departure-row">
-                  <div style="display: flex; align-items: center; overflow: hidden;">
-                    <span class="line-badge">${line}</span>
-                    <span class="destination" title="${dest}">${dest}</span>
-                  </div>
-                  <span class="time-badge ${isRealtime}">${timeText}</span>
-                </div>
-              `;
-            }).join("");
-            continue;
-          }
-
-          container.innerHTML = '<span class="loading-text">Ingen avganger funnet akkurat nå.</span>';
+          container.innerHTML = '<span class="loading-text">Ingen avganger funnet for linje ' + stop.acceptedLines[0] + '.</span>';
           continue;
         }
 
         container.innerHTML = filteredCalls.map(call => {
-          const line = call.serviceJourney.journeyPattern.line.publicCode || "Buss";
-          const dest = call.destinationDisplay.frontText;
+          const line = call.serviceJourney.journeyPattern.line.publicCode;
+          const dest = call.destinationDisplay?.frontText || "Ukjent";
           const timeText = formatTime(call.expectedDepartureTime);
           const isRealtime = call.realtime ? "realtime" : "";
 
