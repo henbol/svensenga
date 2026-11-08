@@ -62,7 +62,6 @@
       gap: 1.5rem;
     }
 
-    /* Netatmo-kartet tar alt tilgjengelig areal, mens sidekolonnen holdes kompakt */
     @media (min-width: 900px) {
       .dashboard-grid {
         grid-template-columns: 1fr 340px;
@@ -87,7 +86,6 @@
       align-items: center;
     }
 
-    /* Større og høyere vindu for Netatmo */
     .map-container {
       width: 100%;
       height: 680px;
@@ -226,15 +224,14 @@
 
     <!-- Toppannonse -->
     <div class="ad-slot">
-      <span>Annonseplass (Google AdSense / Lokalt Banner)</span>
+      <span>Annonseplass (Google AdSense)</span>
     </div>
 
     <div class="dashboard-grid">
-      <!-- Venstre: Netatmo Værkart (bredt og høyt vindu) -->
+      <!-- Venstre: Netatmo Værkart -->
       <section class="card">
         <h2>Været i nabolaget (Netatmo)</h2>
         <div class="map-container">
-          <!-- Sett inn den opprinnelige Netatmo-URL-en din her -->
           <iframe 
             src="https://weathermap.netatmo.com" 
             title="Netatmo Værkart">
@@ -263,31 +260,28 @@
             <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">Oppdateres live</span>
           </h2>
 
-<div class="stop-group">
-  <div class="stop-title">Svensenga (Linje 25)</div>
-  <div id="departures-svensenga" class="loading-text">Henter avganger...</div>
-</div>
+          <div class="stop-group">
+            <div class="stop-title">Svensenga</div>
+            <div id="departures-svensenga" class="loading-text">Henter avganger...</div>
+          </div>
 
-<div class="stop-group">
-  <div class="stop-title">Korsvoll skole (Linje 54)</div>
-  <div id="departures-korsvoll" class="loading-text">Henter avganger...</div>
-</div>
+          <div class="stop-group">
+            <div class="stop-title">Korsvoll</div>
+            <div id="departures-korsvoll" class="loading-text">Henter avganger...</div>
+          </div>
+        </div>
 
         <!-- Lokale hurtiglenker -->
         <div class="card">
           <h2>Lokale hurtiglenker</h2>
           <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem;">
-            <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+            <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
               <span>Tømmekalender</span>
               <a href="https://www.oslo.kommune.no/avfall-og-gjenvinning/avfallshenting/" target="_blank" rel="noopener">Oslo Kommune</a>
             </li>
-            <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+            <li style="padding: 0.5rem 0; display: flex; justify-content: space-between;">
               <span>Føremelding Marka</span>
               <a href="https://www.skiforeningen.no/marka/foremelding/" target="_blank" rel="noopener">Skiforeningen</a>
-            </li>
-            <li style="padding: 0.4rem 0; display: flex; justify-content: space-between;">
-              <span>Annonsere her?</span>
-              <a href="mailto:kontakt@svensenga.no">kontakt@svensenga.no</a>
             </li>
           </ul>
         </div>
@@ -306,7 +300,7 @@
   </div>
 
   <script>
-// --- 1. ENTUR / RUTER OPPSETT ---
+    // --- 1. ENTUR / RUTER OPPSETT ---
     const STOPS = [
       { 
         name: "Svensenga",
@@ -314,13 +308,12 @@
         acceptedLines: ["25", "11N", "12N"] 
       },
       { 
-        name: "Korsvoll", // Maridalsveien 350 / Korsvollbakken
+        name: "Korsvoll", // Maridalsveien ved Korsvollbakken
         elementId: "departures-korsvoll",
-        acceptedLines: ["54", "11N", "12N"] 
+        acceptedLines: ["51", "54", "11N", "12N"] 
       }
     ];
 
-    // Henter stoppesteds-ID dynamisk via Enturs geocoder for å sikre 100 % treff i Oslo
     async function getStopPlaceId(stopName) {
       try {
         const res = await fetch(
@@ -330,12 +323,11 @@
           }
         );
         const data = await res.json();
-        // Finn første stoppested som heter nøyaktig eller starter med navnet i Oslo
         const match = data.features?.find(f => 
           f.properties.name.toLowerCase() === stopName.toLowerCase() ||
           f.properties.label.toLowerCase().includes(stopName.toLowerCase())
         );
-        return match?.properties?.id; // Returnerer f.eks. "NSR:StopPlace:XXXX"
+        return match?.properties?.id;
       } catch (err) {
         console.error("Feil ved geocoding av " + stopName, err);
         return null;
@@ -349,7 +341,7 @@
         query {
           stopPlace(id: "${stopId}") {
             name
-            estimatedCalls(numberOfDepartures: 15) {
+            estimatedCalls(numberOfDepartures: 20) {
               expectedDepartureTime
               realtime
               destinationDisplay {
@@ -395,7 +387,6 @@
       return departure.toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" });
     }
 
-    // Cache for ID-ene så vi slipper å gjøre geocoding-kall hvert 30. sekund
     const stopIdCache = {};
 
     async function updateAllStops() {
@@ -414,14 +405,13 @@
 
         const calls = await fetchDepartures(stopId);
 
-        // Filtrer kun linjene som skal stoppe her
         const filteredCalls = calls.filter(call => {
           const code = call.serviceJourney?.journeyPattern?.line?.publicCode;
           return code && stop.acceptedLines.includes(code.trim());
-        }).slice(0, 4);
+        }).slice(0, 5); // Viser inntil 5 avganger for god oversikt over 51 og 54
 
         if (!filteredCalls || filteredCalls.length === 0) {
-          container.innerHTML = `<span class="loading-text">Ingen nærliggende avganger for linje ${stop.acceptedLines[0]}.</span>`;
+          container.innerHTML = `<span class="loading-text">Ingen nærliggende avganger funnet.</span>`;
           continue;
         }
 
@@ -443,6 +433,7 @@
         }).join("");
       }
     }
+
     // --- 2. YR / MET VÆRVARSEL OPPSETT ---
     async function fetchWeatherForecast() {
       const container = document.getElementById("yr-forecast");
@@ -481,11 +472,11 @@
       }
     }
 
-    // Kjør initial lasting
+    // Kjør initial oppdatering
     updateAllStops();
     fetchWeatherForecast();
 
-    // Automatiske oppdateringsintervaller
+    // Automatiske intervaller
     setInterval(updateAllStops, 30000);
     setInterval(fetchWeatherForecast, 1800000);
   </script>
