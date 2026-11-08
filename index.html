@@ -26,8 +26,9 @@
     }
 
     .container {
-      max-width: 1050px;
+      max-width: 1400px;
       margin: 0 auto;
+      padding: 0 0.5rem;
     }
 
     header {
@@ -61,9 +62,10 @@
       gap: 1.5rem;
     }
 
-    @media (min-width: 850px) {
+    /* Netatmo-kartet tar alt tilgjengelig areal, mens sidekolonnen holdes kompakt */
+    @media (min-width: 900px) {
       .dashboard-grid {
-        grid-template-columns: 3fr 2fr;
+        grid-template-columns: 1fr 340px;
       }
     }
 
@@ -85,9 +87,10 @@
       align-items: center;
     }
 
+    /* Større og høyere vindu for Netatmo */
     .map-container {
       width: 100%;
-      height: 480px;
+      height: 680px;
       border-radius: 8px;
       overflow: hidden;
     }
@@ -142,7 +145,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 160px;
+      max-width: 140px;
     }
 
     .time-badge {
@@ -158,7 +161,7 @@
     .forecast-strip {
       display: flex;
       overflow-x: auto;
-      gap: 0.75rem;
+      gap: 0.5rem;
       padding: 0.5rem 0;
       scrollbar-width: thin;
     }
@@ -168,8 +171,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-width: 58px;
-      padding: 0.5rem 0.25rem;
+      min-width: 52px;
+      padding: 0.45rem 0.2rem;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -183,9 +186,9 @@
     }
 
     .forecast-temp {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
-      margin: 0.25rem 0;
+      margin: 0.2rem 0;
     }
 
     .forecast-precip {
@@ -227,11 +230,11 @@
     </div>
 
     <div class="dashboard-grid">
-      <!-- Venstre: Netatmo Værkart -->
+      <!-- Venstre: Netatmo Værkart (bredt og høyt vindu) -->
       <section class="card">
         <h2>Været i nabolaget (Netatmo)</h2>
         <div class="map-container">
-          <!-- Behold din eksisterende iframe-URL for Netatmo her -->
+          <!-- Sett inn den opprinnelige Netatmo-URL-en din her -->
           <iframe 
             src="https://weathermap.netatmo.com" 
             title="Netatmo Værkart">
@@ -245,8 +248,8 @@
         <!-- Yr / MET Værvarsel -->
         <div class="card">
           <h2>
-            Varsel neste 12 timer
-            <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">Kilde: Yr / MET</span>
+            Varsel neste 10 timer
+            <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">Yr / MET</span>
           </h2>
           <div id="yr-forecast" class="forecast-strip">
             <span class="loading-text">Laster værvarsel...</span>
@@ -393,7 +396,6 @@
     // --- 2. YR / MET VÆRVARSEL OPPSETT ---
     async function fetchWeatherForecast() {
       const container = document.getElementById("yr-forecast");
-      // Posisjon for Svensenga/Korsvoll (lat: 59.965, lon: 10.750)
       const url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.965&lon=10.750";
 
       try {
@@ -406,7 +408,7 @@
         if (!response.ok) throw new Error("Kunne ikke hente værdata");
 
         const data = await response.json();
-        const timeseries = data.properties.timeseries.slice(0, 10); // Neste 10 timer
+        const timeseries = data.properties.timeseries.slice(0, 10);
 
         container.innerHTML = timeseries.map(item => {
           const time = new Date(item.time).toLocaleTimeString("no-NO", { hour: "2-digit" });
@@ -429,11 +431,11 @@
       }
     }
 
-    // Kjør initial oppdatering
+    // Kjør initial lasting
     updateAllStops();
     fetchWeatherForecast();
 
-    // Intervaller: Buss hvert 30. sekund, Værvarsel hver 30. minutt
+    // Automatiske oppdateringsintervaller
     setInterval(updateAllStops, 30000);
     setInterval(fetchWeatherForecast, 1800000);
   </script>
