@@ -309,24 +309,24 @@
 // --- 1. ENTUR / RUTER OPPSETT ---
     const STOPS = [
       { 
-        id: "NSR:StopPlace:5943", 
+        id: "NSR:StopPlace:5943", // Svensenga
         elementId: "departures-svensenga",
-        acceptedLines: ["25"] // Viser kun linje 25 (og evt. nattbuss hvis aktuelt)
+        acceptedLines: ["25", "11N", "12N"] 
       },
       { 
-        id: "NSR:StopPlace:5945", // Korsvoll skole (hvor linje 54 stopper)
+        id: "NSR:StopPlace:5945", // Korsvoll skole
         elementId: "departures-korsvoll",
-        acceptedLines: ["54"] // Viser kun linje 54
+        acceptedLines: ["54", "11N", "12N"] 
       }
     ];
 
     async function fetchDepartures(stopId) {
-      // Henter de neste 8 avgangene for å sikre at vi fanger opp linjene selv ved ulik frekvens
+      // Henter flere avganger (25 stk) så vi er sikre på å fange opp linjene selv om det er intervall mellom dem
       const query = `
         query {
           stopPlace(id: "${stopId}") {
             name
-            estimatedCalls(numberOfDepartures: 8) {
+            estimatedCalls(numberOfDepartures: 25) {
               expectedDepartureTime
               realtime
               destinationDisplay {
@@ -377,14 +377,35 @@
         const container = document.getElementById(stop.elementId);
         const calls = await fetchDepartures(stop.id);
 
-        // Filtrer slik at vi kun viser linjene som faktisk hører hjemme på stoppet
+        // Robust sjekk på linjenummer
         const filteredCalls = calls.filter(call => {
-          const line = call.serviceJourney?.journeyPattern?.line?.publicCode;
-          return stop.acceptedLines.includes(line);
-        }).slice(0, 4); // Vis maks 4 avganger om gangen
+          const code = call.serviceJourney?.journeyPattern?.line?.publicCode;
+          if (!code) return false;
+          return stop.acceptedLines.some(l => code.trim() === l);
+        }).slice(0, 4);
 
         if (!filteredCalls || filteredCalls.length === 0) {
-          container.innerHTML = '<span class="loading-text">Ingen avganger funnet for linje ' + stop.acceptedLines.join(", ") + '.</span>';
+          // Fallback: hvis linjefilteret ikke matcher koden fra Entur, vis de reelle avgangene som kom inn for feilsøking
+          if (calls.length > 0) {
+            container.innerHTML = calls.slice(0, 4).map(call => {
+              const line = call.serviceJourney?.journeyPattern?.line?.publicCode || "Buss";
+              const dest = call.destinationDisplay?.frontText || "";
+              const timeText = formatTime(call.expectedDepartureTime);
+              const isRealtime = call.realtime ? "realtime" : "";
+              return `
+                <div class="departure-row">
+                  <div style="display: flex; align-items: center; overflow: hidden;">
+                    <span class="line-badge">${line}</span>
+                    <span class="destination" title="${dest}">${dest}</span>
+                  </div>
+                  <span class="time-badge ${isRealtime}">${timeText}</span>
+                </div>
+              `;
+            }).join("");
+            continue;
+          }
+
+          container.innerHTML = '<span class="loading-text">Ingen avganger funnet akkurat nå.</span>';
           continue;
         }
 
@@ -406,7 +427,6 @@
         }).join("");
       }
     }
-
     // --- 2. YR / MET VÆRVARSEL OPPSETT ---
     async function fetchWeatherForecast() {
       const container = document.getElementById("yr-forecast");
