@@ -252,21 +252,23 @@
         </div>
       </section>
 
-      <!-- 2. Ruter Sanntid (Linje 25, 51, 54) -->
+      <!-- 2. Ruter Sanntid (Korsvoll øverst, deretter Svensenga) -->
       <section class="card">
         <h2>
           Buss i nærheten
           <span style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">Oppdateres live</span>
         </h2>
 
-        <div class="stop-group">
-          <div class="stop-title">Svensenga</div>
-          <div id="departures-svensenga" class="loading-text">Henter avganger...</div>
-        </div>
-
+        <!-- Korsvoll øverst -->
         <div class="stop-group">
           <div class="stop-title">Korsvoll</div>
           <div id="departures-korsvoll" class="loading-text">Henter avganger...</div>
+        </div>
+
+        <!-- Svensenga under -->
+        <div class="stop-group">
+          <div class="stop-title">Svensenga</div>
+          <div id="departures-svensenga" class="loading-text">Henter avganger...</div>
         </div>
       </section>
 
@@ -310,17 +312,17 @@
   </div>
 
   <script>
-    // --- 1. ENTUR / RUTER OPPSETT ---
+    // --- 1. ENTUR / RUTER OPPSETT (Korsvoll først, så Svensenga) ---
     const STOPS = [
-      { 
-        name: "Svensenga",
-        elementId: "departures-svensenga",
-        acceptedLines: ["25", "11N", "12N"] 
-      },
       { 
         name: "Korsvoll",
         elementId: "departures-korsvoll",
         acceptedLines: ["51", "54", "11N", "12N"] 
+      },
+      { 
+        name: "Svensenga",
+        elementId: "departures-svensenga",
+        acceptedLines: ["25", "11N", "12N"] 
       }
     ];
 
@@ -444,17 +446,14 @@
       }
     }
 
-    // --- 2. YR / MET VÆRVARSEL OPPSETT ---
+    // --- 2. YR / MET VÆRVARSEL OPPSETT (Fikset for mobil/Safari) ---
     async function fetchWeatherForecast() {
       const container = document.getElementById("yr-forecast");
       const url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.965&lon=10.750";
 
       try {
-        const response = await fetch(url, {
-          headers: {
-            "User-Agent": "svensenga.no kontakt@svensenga.no"
-          }
-        });
+        // Kaller uten eksplisitt User-Agent slik at mobilnettlesere ikke blokkerer headeren
+        const response = await fetch(url);
 
         if (!response.ok) throw new Error("Kunne ikke hente værdata");
 
