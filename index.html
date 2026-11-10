@@ -277,7 +277,11 @@
         <h2>Lokale hurtiglenker</h2>
         <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.95rem;">
           <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
-            <span>Tømmekalender</span>
+            <span>Svensenga Sameie</span>
+            <a href="https://vibbo.no/svensenga---like-nummer" target="_blank" rel="noopener">Vibbo</a>
+          </li>
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+            <span>Hentekalender for avfall</span>
             <a href="https://www.oslo.kommune.no/avfall-og-gjenvinning/avfallshenting/" target="_blank" rel="noopener">Oslo Kommune</a>
           </li>
           <li style="padding: 0.5rem 0; display: flex; justify-content: space-between;">
@@ -452,7 +456,6 @@
       const url = "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.965&lon=10.750";
 
       try {
-        // Kaller uten eksplisitt User-Agent slik at mobilnettlesere ikke blokkerer headeren
         const response = await fetch(url);
 
         if (!response.ok) throw new Error("Kunne ikke hente værdata");
