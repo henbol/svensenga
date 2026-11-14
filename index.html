@@ -16,6 +16,10 @@
     gtag('config', 'G-P158V1H4FG');
   </script>
 
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4666810770474236"
+     crossorigin="anonymous"></script>
+
   <style>
     :root {
       --bg: #f8fafc;
@@ -49,6 +53,37 @@
     h1 {
       margin: 0 0 0.25rem 0;
       font-size: 1.6rem;
+    }
+
+    .nav-bar {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      transition: all 0.15s ease;
+    }
+
+    .nav-link:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .nav-link.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
     }
 
     /* Modul- og kortoppsett */
@@ -229,6 +264,15 @@
       font-size: 0.85rem;
       color: var(--text-muted);
     }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -237,6 +281,11 @@
     <header>
       <h1>Svensenga & Korsvoll Nabolag</h1>
       <p style="margin: 0; color: var(--text-muted);">Lokal sanntidsinformasjon & værstasjon</p>
+      <nav class="nav-bar" aria-label="Hovedmeny">
+        <a href="index.html" class="nav-link active">Sanntid & Vær</a>
+        <a href="nabolaget.html" class="nav-link">Om nabolaget</a>
+        <a href="personvern.html" class="nav-link">Om siden & Personvern</a>
+      </nav>
     </header>
 
     <div class="dashboard-stack">
@@ -303,30 +352,24 @@
         </div>
       </section>
 
-      <!-- 5. Om nabolaget & Personvern (Klargjort for Google AdSense) -->
+      <!-- 5. Kort introduksjon til portalen -->
       <section class="card">
-        <h2>Om Svensenga og Korsvoll</h2>
+        <h2>Lokalportal for Svensenga og Korsvoll</h2>
         <p>
-          <strong>svensenga.no</strong> er en lokal informasjonsside for beboere på Svensenga, Korsvoll og nærliggende områder langs Maridalsveien i Bydel Nordre Aker i Oslo. Portalen samler sanntidsinformasjon for kollektivtrafikk, lokale værmålinger og praktiske lenker på ett sted for en enklere hverdag.
+          <strong>svensenga.no</strong> er et lokalt oppslagsverk og sanntidsdashbord for beboere på Svensenga, Korsvoll og langs Maridalsveien i Bydel Nordre Aker i Oslo. Her finner du oppdaterte bussavganger fra holdeplassene Korsvoll (linje 51 og 54) og Svensenga (linje 25), kombinert med lokalt time-for-time-værvarsel fra Meteorologisk institutt og sanntidsmålinger fra værstasjonen i nabolaget.
         </p>
-        <h3>Kollektivtransport og pendling</h3>
         <p>
-          Området betjenes hovedsakelig av busslinjene i Maridalsveien og ved Korsvollbakken. Fra holdeplassen <strong>Korsvoll</strong> (ved Maridalsveien 350) går linje 54 mot Aker brygge og Kjelsås stasjon, samt linje 51 mot Nydalen og Maridalen. Fra <strong>Svensenga</strong> holdeplass går linje 25 mellom Majorstuen og Lørenskog stasjon. Sanntidsoversikten på denne siden henter oppdaterte avgangstider direkte fra Entur og Ruter hvert 30. sekund.
-        </p>
-        <h3>Værstasjon og friluftsliv</h3>
-        <p>
-          Med umiddelbar nærhet til Nordmarka, skiløyper, turveier og Akerselva er lokale vær- og føreforhold viktige året rundt. Time-for-time-varselet øverst på siden leveres av Meteorologisk institutt (MET / Yr) for koordinatene til Svensenga, mens værkartet viser faktiske målinger fra den lokale Netatmo-værstasjonen i nabolaget.
-        </p>
-        <h3>Personvern og informasjonskapsler (Cookies)</h3>
-        <p>
-          Nettsiden benytter Google Analytics for anonymisert besøksstatistikk, slik at vi kan se hvor mange som bruker tjenesten og forbedre brukeropplevelsen. Ved bruk av Google AdSense kan tredjepartsleverandører, inkludert Google, bruke informasjonskapsler (cookies) for å vise relevante annonser basert på tidligere besøk på dette eller andre nettsteder. Brukere kan administrere eller velge bort personlig tilpassede annonser via Googles annonseinnstillinger.
+          Les mer om <a href="nabolaget.html" style="color: var(--primary);">nærområdet, turmuligheter i Nordmarka og kollektivtilbudet</a>, eller se informasjon om <a href="personvern.html" style="color: var(--primary);">om siden og personvern</a>.
         </p>
       </section>
 
     </div>
 
     <footer>
-      <p>&copy; svensenga.no | Data levert av MET/Yr, Entur/Ruter & Netatmo</p>
+      <p>
+        &copy; svensenga.no | <a href="index.html">Forside</a> &middot; <a href="nabolaget.html">Om nabolaget</a> &middot; <a href="personvern.html">Personvern</a><br>
+        Data levert av MET/Yr, Entur/Ruter & Netatmo
+      </p>
     </footer>
   </div>
 
